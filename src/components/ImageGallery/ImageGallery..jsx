@@ -12,7 +12,6 @@ export const ImageGallery = ({
   dataLengthPerPage,
   dataTotal,
 }) => {
-  console.log(dataTotal);
   return (
     <>
       {error && (

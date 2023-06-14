@@ -11,7 +11,6 @@ export const App = () => {
   const [error, setError] = useState(null);
   const [dataLengthPerPage, setDataLengthPerPage] = useState(null);
   const [dataTotal, setDataTotal] = useState(null);
-
   useEffect(() => {
     if (!value) {
       return;
@@ -24,10 +23,10 @@ export const App = () => {
         setSearchData(prevData => [...prevData, ...data.hits]);
         setDataLengthPerPage(data.hits.length);
         setDataTotal(data.total);
-        if (data.hits.length === 0 && data.total < 12) {
-          return Promise.reject(new Error('По запросу нічого не знайдено.'));
-        }
         setLoading(false);
+        if (data.hits.length === 0 && data.total < 12) {
+          throw new Error('По запросу нічого не знайдено.');
+        }
       } catch (error) {
         setError(error);
       }
