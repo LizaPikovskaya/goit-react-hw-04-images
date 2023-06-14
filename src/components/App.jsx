@@ -1,89 +1,72 @@
-import { Component } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery.';
 import { fetchImages } from 'services/api';
+import { useEffect, useState } from 'react';
 
-export class App extends Component {
-  state = {
-    value: '',
-    searchData: [],
-    loading: false,
-    page: 1,
-    error: null,
-    dataLengthPerPage: null,
-  };
+export const App = () => {
+  const [value, setValue] = useState('');
+  const [searchData, setSearchData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [dataLengthPerPage, setDataLengthPerPage] = useState(null);
+  const [dataTotal, setDataTotal] = useState(null);
 
-  componentDidUpdate(_, prevState) {
-    const { value, page, searchData } = this.state;
-    if(prevState.searchData !== searchData && page !== 1) {
-window.scrollBy({
-  top: 300 * 2,
-  behavior: 'smooth',
-});    }
-    if (
-      prevState.value !== this.state.value ||
-      prevState.page !== this.state.page
-    ) {
-      this.setState({ loading: true, error: null });
-      fetchImages(value, page)
-        // .then(resp => {
-        //   if (resp.ok) {
-        //     return resp.json();
-        //   } else {
-        //     return Promise.reject(new Error('По запросу нічого не знайдено.'));
-        //   }
-        // })
-        .then(response => {
-          console.log(response);
-          const { data } = response;
-          this.setState(prevState => ({
-            searchData: [...prevState.searchData, ...data.hits],
-            dataLengthPerPage: data.hits.length,
-          }));
-          if (data.hits.length === 0) {
-            return Promise.reject(new Error('По запросу нічого не знайдено.'));
-          }
-        })
-        .catch(error => this.setState({ error }))
-        .finally(() => {
-          this.setState({ loading: false });
-        });
+  useEffect(() => {
+    if (!value) {
+      return;
     }
-  }
-  handlerOnLoadMoreClick = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
-
-  useValueFromSearchBar = value => {
-    this.setState({
-      value,
-    });
-
-    this.setState(prevState => {
-      if (prevState.value !== this.state.value) {
-        return {
-          searchData: [],
-          page: 1,
-        };
+    async function getImages() {
+      try {
+        setLoading(true);
+        const response = await fetchImages(value, page);
+        const { data } = response;
+        setSearchData(prevData => [...prevData, ...data.hits]);
+        setDataLengthPerPage(data.hits.length);
+        setDataTotal(data.total);
+        if (data.hits.length === 0 && data.total < 12) {
+          return Promise.reject(new Error('По запросу нічого не знайдено.'));
+        }
+        setLoading(false);
+      } catch (error) {
+        setError(error);
       }
+    }
+    getImages();
+  }, [value, page]);
+
+  useEffect(() => {
+    if (page === 1) {
+      return;
+    }
+    window.scrollBy({
+      top: 300 * 2,
+      behavior: 'smooth',
     });
+  }, [searchData, page]);
+
+  const handlerOnLoadMoreClick = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  render() {
-    const { searchData, loading, error, dataLengthPerPage } = this.state;
-    return (
-      <>
-        <Searchbar useValueFromSearchBar={this.useValueFromSearchBar} />
-        <ImageGallery
-          searchData={searchData}
-          loading={loading}
-          error={error}
-          handlerOnLoadMoreClick={this.handlerOnLoadMoreClick}
-          dataLengthPerPage={dataLengthPerPage}
-        />
-      </>
-    );
-  }
-}
+  const getValueFromSearchBar = value => {
+    setValue(value);
+    setSearchData([]);
+    setPage(1);
+    setError(null);
+  };
+
+  return (
+    <>
+      <Searchbar getValueFromSearchBar={getValueFromSearchBar} />
+      <ImageGallery
+        searchData={searchData}
+        loading={loading}
+        error={error}
+        handlerOnLoadMoreClick={handlerOnLoadMoreClick}
+        dataLengthPerPage={dataLengthPerPage}
+        dataTotal={dataTotal}
+      />
+    </>
+  );
+};

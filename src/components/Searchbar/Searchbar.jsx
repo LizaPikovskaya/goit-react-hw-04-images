@@ -1,4 +1,4 @@
-import { Component, React } from 'react';
+import { React, useState } from 'react';
 import {
   Header,
   SearchForm,
@@ -11,47 +11,44 @@ import PropTypes from 'prop-types';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export class Searchbar extends Component {
-  static propTypes = {
-    useValueFromSearchBar: PropTypes.func,
-  };
+export const Searchbar = ({ getValueFromSearchBar }) => {
+  const [value, setValue] = useState('');
 
-  state = {
-    value: '',
-  };
-  handlerSubmit = evt => {
+  const handlerSubmit = evt => {
     evt.preventDefault();
-    if (!this.state.value.trim()) {
+    if (!value.trim()) {
       return toast.warn('Please, fill the field.');
     }
-    this.props.useValueFromSearchBar(this.state.value);
-    this.reset();
+    getValueFromSearchBar(value);
+    reset();
   };
-  handlerOnChange = evt => {
-    this.setState({ value: evt.target.value });
+  const handlerOnChange = evt => {
+    setValue(evt.target.value);
   };
 
-  reset = () => {
-    this.setState({ value: '' });
+  const reset = () => {
+    setValue('');
   };
-  render() {
-    return (
-      <Header>
-        <SearchForm onSubmit={this.handlerSubmit}>
-          <SearchFormButton>
-            <ImSearch width={30} height={30} />
-          </SearchFormButton>
-          <SearchFormInput
-            onChange={this.handlerOnChange}
-            type="text"
-            autocomplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={this.state.value}
-          />
-          <ToastContainer />
-        </SearchForm>
-      </Header>
-    );
-  }
-}
+  return (
+    <Header>
+      <SearchForm onSubmit={handlerSubmit}>
+        <SearchFormButton>
+          <ImSearch width={30} height={30} />
+        </SearchFormButton>
+        <SearchFormInput
+          onChange={handlerOnChange}
+          type="text"
+          autocomplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={value}
+        />
+        <ToastContainer />
+      </SearchForm>
+    </Header>
+  );
+};
+
+Searchbar.propTypes = {
+  getValueFromSearchBar: PropTypes.func,
+};
