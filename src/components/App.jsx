@@ -11,6 +11,7 @@ export const App = () => {
   const [error, setError] = useState(null);
   const [dataLengthPerPage, setDataLengthPerPage] = useState(null);
   const [dataTotal, setDataTotal] = useState(null);
+
   useEffect(() => {
     if (!value) {
       return;
@@ -18,17 +19,18 @@ export const App = () => {
     async function getImages() {
       try {
         setLoading(true);
-        const response = await fetchImages(value, page);
+        const response = await fetchImages(value.split('/')[1], page);
         const { data } = response;
         setSearchData(prevData => [...prevData, ...data.hits]);
         setDataLengthPerPage(data.hits.length);
         setDataTotal(data.total);
-        setLoading(false);
         if (data.hits.length === 0 && data.total < 12) {
           throw new Error('По запросу нічого не знайдено.');
         }
       } catch (error) {
         setError(error);
+      } finally {
+        setLoading(false);
       }
     }
     getImages();
@@ -49,7 +51,7 @@ export const App = () => {
   };
 
   const getValueFromSearchBar = value => {
-    setValue(value);
+    setValue(`${Date.now()}/${value}`);
     setSearchData([]);
     setPage(1);
     setError(null);
