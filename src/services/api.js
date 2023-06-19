@@ -17,7 +17,5 @@ axios.defaults.params = {
   key: API_KEY,
 };
 export const fetchImages = (value, page = 1) => {
-  return axios.get(
-    `?q=${value}&page=${page}`
-  );
+  return axios.get(`?q=${value}&page=${page}`);
 };

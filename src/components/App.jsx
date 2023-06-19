@@ -16,10 +16,14 @@ export const App = () => {
     if (!value) {
       return;
     }
+
     async function getImages() {
       try {
         setLoading(true);
-        const response = await fetchImages(value.split('/')[1], page);
+        const response = await fetchImages(
+          value.split('/')[1],
+          page,
+        );
         const { data } = response;
         setSearchData(prevData => [...prevData, ...data.hits]);
         setDataLengthPerPage(data.hits.length);
@@ -34,6 +38,7 @@ export const App = () => {
       }
     }
     getImages();
+
   }, [value, page]);
 
   useEffect(() => {
